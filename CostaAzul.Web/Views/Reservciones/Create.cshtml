@@ -1,0 +1,398 @@
+﻿@model CostaAzul.API.Models.Entities.Reservacion
+@{
+    ViewData["Title"] = "Reservar habitación";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="text-success">
+                    <i class="fas fa-calendar-plus me-2"></i>
+                    Reservar Habitación
+                </h2>
+                <p class="text-muted">Completa los datos para tu reservación</p>
+            </div>
+
+            <!-- Card del formulario -->
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bed me-2"></i>
+                        Información de Reserva
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" class="reservation-form">
+                        <!-- Hidden inputs -->
+                        <input type="hidden" id="MontoCalculado" name="MontoCalculado" />
+                        <input type="hidden" name="HotelId" value="@ViewBag.HotelId" />
+
+                        <!-- Selección de habitación -->
+                        <div class="mb-4">
+                            <label asp-for="HabitacionId" class="form-label fw-bold">
+                                <i class="fas fa-door-open me-2"></i>
+                                Seleccionar Habitación
+                            </label>
+                            <select id="HabitacionId" name="HabitacionId" class="form-select form-select-lg" required>
+                                <option value="">-- Selecciona una habitación --</option>
+                                @foreach (var hab in ViewBag.Habitaciones)
+                                {
+                                    <option value="@hab.Id"
+                                            data-precio="@hab.PrecioPorPersona"
+                                            data-capacidad="@hab.Capacidad"
+                                            data-tipo="@hab.Tipo">
+                                        Habitación #@hab.Numero - @hab.Tipo (₡@hab.PrecioPorPersona.ToString("N0") por persona)
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="HabitacionId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Información de la habitación seleccionada -->
+                        <div id="room-info" class="alert alert-info d-none mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted">Tipo:</small>
+                                    <div class="fw-bold" id="room-type">-</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Precio:</small>
+                                    <div class="fw-bold text-success" id="room-price">-</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Capacidad:</small>
+                                    <div class="fw-bold text-primary" id="room-capacity">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fechas -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FechaInicio" class="form-label fw-bold">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    Fecha de Entrada
+                                </label>
+                                <input asp-for="FechaInicio" type="date" class="form-control form-control-lg" required />
+                                <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FechaFin" class="form-label fw-bold">
+                                    <i class="fas fa-calendar-check me-2"></i>
+                                    Fecha de Salida
+                                </label>
+                                <input asp-for="FechaFin" type="date" class="form-control form-control-lg" required />
+                                <span asp-validation-for="FechaFin" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Información de estadía -->
+                        <div id="stay-info" class="alert alert-light d-none mb-4">
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <i class="fas fa-moon text-primary fs-4"></i>
+                                    <div class="fw-bold mt-1" id="nights-count">0 noches</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <i class="fas fa-calendar-day text-info fs-4"></i>
+                                    <div class="fw-bold mt-1" id="checkin-date">-</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <i class="fas fa-calendar-times text-warning fs-4"></i>
+                                    <div class="fw-bold mt-1" id="checkout-date">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cantidad de personas -->
+                        <div class="mb-4">
+                            <label asp-for="CantidadPersonas" class="form-label fw-bold">
+                                <i class="fas fa-users me-2"></i>
+                                Número de Huéspedes
+                            </label>
+                            <input asp-for="CantidadPersonas" class="form-control form-control-lg"
+                                   type="number" min="1" max="10" placeholder="1" required />
+                            <span asp-validation-for="CantidadPersonas" class="text-danger"></span>
+                        </div>
+
+                        <!-- Alertas de validación -->
+                        <div id="capacity-alert" class="alert alert-warning d-none">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Atención:</strong> La cantidad de personas excede la capacidad de la habitación.
+                        </div>
+
+                        <div id="availability-alert" class="alert alert-danger d-none">
+                            <i class="fas fa-times-circle me-2"></i>
+                            <strong>No disponible:</strong> La habitación no está disponible para las fechas seleccionadas.
+                        </div>
+
+                        <!-- Monto total -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-calculator me-2"></i>
+                                Monto Total de la Reserva
+                            </label>
+                            <div class="total-display p-3 bg-light rounded">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <input id="MontoTotal" class="form-control-plaintext fs-4 fw-bold text-success"
+                                               value="₡0" readonly />
+                                        <small class="text-muted" id="calculation-detail">Selecciona los datos para calcular</small>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <i class="fas fa-money-bill-wave text-success fs-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("Index", "Hoteles")" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Volver a Hoteles
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg" id="btnReservar" disabled>
+                                <i class="fas fa-check me-2"></i>
+                                Confirmar Reserva
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="mt-4">
+                <div class="alert alert-info border-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Importante:</strong> Tu reserva será confirmada inmediatamente. Podrás proceder al pago en el siguiente paso.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para el formulario de reservación */
+    .reservation-form {
+        /* Sin efectos complejos */
+    }
+
+    .form-control-lg, .form-select-lg {
+        border: 2px solid #dee2e6;
+        transition: border-color 0.3s ease;
+    }
+
+        .form-control-lg:focus, .form-select-lg:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+        }
+
+    .total-display {
+        border: 2px solid #198754;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    }
+
+    .form-control-plaintext {
+        border: none !important;
+        background: transparent !important;
+    }
+
+    #btnReservar:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        cursor: not-allowed;
+    }
+
+    #btnReservar:not(:disabled) {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+        #btnReservar:not(:disabled):hover {
+            background-color: #157347;
+            border-color: #146c43;
+        }
+
+    .card {
+        transition: box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .d-flex.justify-content-between
+
+    {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .btn-lg {
+        width: 100%;
+    }
+
+    .total-display .row {
+        text-align: center !important;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Formulario de reservación inicializado');
+
+            // Referencias a elementos
+            const selectHabitacion = document.getElementById("HabitacionId");
+            const inputFechaInicio = document.getElementById("FechaInicio");
+            const inputFechaFin = document.getElementById("FechaFin");
+            const inputPersonas = document.getElementById("CantidadPersonas");
+            const inputMonto = document.getElementById("MontoTotal");
+            const inputHiddenMonto = document.getElementById("MontoCalculado");
+            const btnReservar = document.getElementById("btnReservar");
+
+            // Alertas
+            const capacityAlert = document.getElementById("capacity-alert");
+            const availabilityAlert = document.getElementById("availability-alert");
+
+            // Info panels
+            const roomInfo = document.getElementById("room-info");
+            const stayInfo = document.getElementById("stay-info");
+
+            // Verificar disponibilidad
+            async function verificarDisponibilidad(habitacionId, inicio, fin) {
+                if (!habitacionId || !inicio || !fin) {
+                    availabilityAlert.classList.add("d-none");
+                    return true;
+                }
+
+                try {
+                    const response = await fetch(`/Reservaciones/Disponibilidad?habitacionId=${habitacionId}&inicio=${inicio}&fin=${fin}`);
+                    const data = await response.json();
+
+                    if (!data.disponible) {
+                        availabilityAlert.classList.remove("d-none");
+                        return false;
+                    } else {
+                        availabilityAlert.classList.add("d-none");
+                        return true;
+                    }
+                } catch (e) {
+                    console.error('Error verificando disponibilidad:', e);
+                    availabilityAlert.classList.remove("d-none");
+                    return false;
+                }
+            }
+
+            // Calcular y mostrar información
+            async function calcularMonto() {
+                const selectedOption = selectHabitacion.selectedOptions[0];
+                const precio = parseFloat(selectedOption?.dataset.precio || 0);
+                const capacidad = parseInt(selectedOption?.dataset.capacidad || 0);
+                const tipo = selectedOption?.dataset.tipo || '';
+                const personas = parseInt(inputPersonas.value || 0);
+                const inicio = inputFechaInicio.value;
+                const fin = inputFechaFin.value;
+
+                // Resetear estados
+                capacityAlert.classList.add("d-none");
+                availabilityAlert.classList.add("d-none");
+                btnReservar.disabled = true;
+
+                // Mostrar información de habitación
+                if (selectedOption && selectedOption.value) {
+                    document.getElementById('room-type').textContent = tipo;
+                    document.getElementById('room-price').textContent = `₡${precio.toLocaleString()}`;
+                    document.getElementById('room-capacity').textContent = `${capacidad} personas`;
+                    roomInfo.classList.remove('d-none');
+                } else {
+                    roomInfo.classList.add('d-none');
+                    stayInfo.classList.add('d-none');
+                    inputMonto.value = '₡0';
+                    document.getElementById('calculation-detail').textContent = 'Selecciona los datos para calcular';
+                    return;
+                }
+
+                // Validar fechas y calcular noches
+                if (inicio && fin) {
+                    const fechaInicio = new Date(inicio);
+                    const fechaFin = new Date(fin);
+                    const diffTime = fechaFin - fechaInicio;
+                    const noches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (noches > 0) {
+                        document.getElementById('nights-count').textContent = `${noches} ${noches === 1 ? 'noche' : 'noches'}`;
+                        document.getElementById('checkin-date').textContent = fechaInicio.toLocaleDateString('es-CR');
+                        document.getElementById('checkout-date').textContent = fechaFin.toLocaleDateString('es-CR');
+                        stayInfo.classList.remove('d-none');
+
+                        // Validar capacidad
+                        if (personas > 0) {
+                            if (personas > capacidad) {
+                                capacityAlert.classList.remove("d-none");
+                                inputMonto.value = '₡0';
+                                document.getElementById('calculation-detail').textContent = 'Capacidad excedida';
+                                return;
+                            }
+
+                            // Verificar disponibilidad
+                            const disponible = await verificarDisponibilidad(selectHabitacion.value, inicio, fin);
+
+                            if (disponible) {
+                                // Calcular monto total
+                                const total = precio * personas * noches;
+                                inputMonto.value = `₡${total.toLocaleString()}`;
+                                inputHiddenMonto.value = total;
+                                document.getElementById('calculation-detail').textContent =
+                                    `₡${precio.toLocaleString()} × ${personas} persona${personas > 1 ? 's' : ''} × ${noches} noche${noches > 1 ? 's' : ''}`;
+
+                                btnReservar.disabled = false;
+                            } else {
+                                inputMonto.value = '₡0';
+                                document.getElementById('calculation-detail').textContent = 'No disponible para estas fechas';
+                            }
+                        }
+                    } else {
+                        stayInfo.classList.add('d-none');
+                        inputMonto.value = '₡0';
+                        document.getElementById('calculation-detail').textContent = 'Fechas inválidas';
+                    }
+                }
+            }
+
+            // Event listeners
+            selectHabitacion.addEventListener("change", calcularMonto);
+            inputFechaInicio.addEventListener("change", calcularMonto);
+            inputFechaFin.addEventListener("change", calcularMonto);
+            inputPersonas.addEventListener("input", calcularMonto);
+
+            // Validar fechas mínimas
+            const today = new Date().toISOString().split('T')[0];
+            inputFechaInicio.setAttribute('min', today);
+
+            inputFechaInicio.addEventListener('change', function() {
+                inputFechaFin.setAttribute('min', this.value);
+            });
+
+            // Manejar envío del formulario
+            const form = document.querySelector('.reservation-form');
+            form.addEventListener('submit', function(e) {
+                btnReservar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+                btnReservar.disabled = true;
+            });
+        });
+    </script>
+}

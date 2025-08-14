@@ -1,0 +1,345 @@
+﻿@model List<CostaAzul.API.Models.Entities.Reservacion>
+@{
+    ViewData["Title"] = "Mis Reservaciones";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary mb-0">
+            <i class="fas fa-calendar-check me-2"></i>
+            Mis Reservaciones
+        </h2>
+        <div class="d-flex align-items-center">
+            <span class="badge bg-info fs-6 me-2">
+                Total: @Model.Count() reserva@(Model.Count() != 1 ? "s" : "")
+            </span>
+            <a asp-controller="Hoteles" asp-action="Index" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>
+                Nueva Reserva
+            </a>
+        </div>
+    </div>
+
+    <!-- Alerta de error -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Contenido principal -->
+    @if (!Model.Any())
+    {
+        <!-- Estado vacío -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-calendar-times text-muted mb-3" style="font-size: 4rem;"></i>
+                <h4 class="text-muted mb-3">No tienes reservaciones</h4>
+                <p class="text-muted mb-4">Comienza explorando nuestros hoteles y encuentra el lugar perfecto para tu estadía.</p>
+                <a asp-controller="Hoteles" asp-action="Index" class="btn btn-success btn-lg">
+                    <i class="fas fa-search me-2"></i>
+                    Explorar Hoteles
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Tabla de reservaciones -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 reservations-table">
+                        <thead class="table-primary">
+                            <tr>
+                                <th><i class="fas fa-hotel me-2"></i>Hotel</th>
+                                <th><i class="fas fa-door-open me-2"></i>Habitación</th>
+                                <th><i class="fas fa-calendar me-2"></i>Fechas</th>
+                                <th><i class="fas fa-users me-2"></i>Huéspedes</th>
+                                <th><i class="fas fa-dollar-sign me-2"></i>Monto</th>
+                                <th><i class="fas fa-file-invoice me-2"></i>Factura</th>
+                                <th class="text-center"><i class="fas fa-cog me-2"></i>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model)
+                            {
+                                var pagada = r.Facturaciones.Any(f => f.Estado == "Pagado");
+
+                                <tr class="reservation-row @(pagada ? "table-success" : "")" id="reservation-@r.Id">
+                                    <td>
+                                        <div class="fw-semibold">@r.Habitacion?.Hotel?.Nombre</div>
+                                        <small class="text-muted">Reserva #@r.Id</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-dark fs-6">#@r.Habitacion?.Numero</span>
+                                        <div class="small text-muted">@r.Habitacion?.Tipo</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">@r.FechaInicio.ToString("dd/MM/yyyy")</div>
+                                        <div class="small text-muted">
+                                            <i class="fas fa-arrow-right me-1"></i>@r.FechaFin.ToString("dd/MM/yyyy")
+                                        </div>
+                                        @{
+                                            var nights = r.FechaFin.DayNumber - r.FechaInicio.DayNumber;
+                                        }
+                                        <small class="badge bg-secondary">@nights noche@(nights != 1 ? "s" : "")</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">@r.CantidadPersonas persona@(r.CantidadPersonas > 1 ? "s" : "")</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-success">₡@r.Monto.ToString("N0")</div>
+                                        @if (r.CantidadPersonas > 0 && nights > 0)
+                                        {
+                                            var precioPersonaNoche = r.Monto / (r.CantidadPersonas * nights);
+                                            <small class="text-muted">₡@precioPersonaNoche.ToString("N0") p/p/noche</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (r.Facturaciones.Any())
+                                        {
+                                            var factura = r.Facturaciones.First();
+                                            <a asp-controller="Facturacion" asp-action="Detalle" asp-route-id="@factura.Id"
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-file-invoice me-1"></i>
+                                                Ver Factura
+                                            </a>
+                                            @if (factura.Estado == "Pagado")
+                                            {
+                                                <div class="mt-1">
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Pagada
+                                                    </span>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="mt-1">
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="fas fa-clock me-1"></i>Pendiente
+                                                    </span>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-hourglass-half me-1"></i>
+                                                Sin Factura
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (!pagada)
+                                        {
+                                            <div class="btn-group-vertical" role="group">
+                                                <a asp-action="Edit" asp-route-id="@r.Id"
+                                                   class="btn btn-warning btn-sm mb-1"
+                                                   title="Editar reservación">
+                                                    <i class="fas fa-edit me-1"></i>Editar
+                                                </a>
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm delete-btn"
+                                                        data-reservation-id="@r.Id"
+                                                        data-hotel="@r.Habitacion?.Hotel?.Nombre"
+                                                        data-room="@r.Habitacion?.Numero"
+                                                        title="Eliminar reservación">
+                                                    <i class="fas fa-trash me-1"></i>Eliminar
+                                                </button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success fs-6">
+                                                <i class="fas fa-lock me-1"></i>
+                                                Confirmada
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen de estadísticas -->
+        <div class="row mt-4">
+            @{
+                var totalPagadas = Model.Count(r => r.Facturaciones.Any(f => f.Estado == "Pagado"));
+                var totalPendientes = Model.Count - totalPagadas;
+                var montoTotal = Model.Where(r => r.Facturaciones.Any(f => f.Estado == "Pagado")).Sum(r => r.Monto);
+            }
+
+            <div class="col-md-4">
+                <div class="card border-0 bg-success text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fs-2 mb-2"></i>
+                        <h5>@totalPagadas Confirmadas</h5>
+                        <small>Reservas pagadas</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fs-2 mb-2"></i>
+                        <h5>@totalPendientes Pendientes</h5>
+                        <small>Por confirmar pago</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 bg-info text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-dollar-sign fs-2 mb-2"></i>
+                        <h5>₡@montoTotal.ToString("N0")</h5>
+                        <small>Total invertido</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    /* Estilos para la tabla de reservaciones */
+    .reservations-table {
+        font-size: 0.95rem;
+    }
+
+    .reservation-row {
+        transition: all 0.3s ease;
+    }
+
+        .reservation-row:hover {
+            background-color: #f8f9fa !important;
+            transform: translateY(-1px);
+        }
+
+    .table th {
+        border-bottom: 2px solid #dee2e6;
+        vertical-align: middle;
+        font-weight: 600;
+    }
+
+    .table td {
+        vertical-align: middle;
+        padding: 1rem 0.75rem;
+    }
+
+    .btn-group-vertical .btn {
+        margin-bottom: 4px;
+    }
+
+        .btn-group-vertical .btn:last-child {
+            margin-bottom: 0;
+        }
+
+    /* Estados de reserva */
+    .table-success {
+        background-color: rgba(25, 135, 84, 0.1) !important;
+    }
+
+    /* Cards de estadísticas */
+    .card {
+        transition: transform 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .btn-group-vertical
+
+    {
+        flex-direction: row !important;
+        width: 100%;
+    }
+
+    .btn-group-vertical .btn {
+        margin: 0 2px;
+        font-size: 0.8rem;
+    }
+
+    .reservations-table {
+        font-size: 0.85rem;
+    }
+
+    .badge {
+        font-size: 0.7rem;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Vista de mis reservaciones inicializada');
+
+            // Manejar eliminación de reservaciones
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const reservationId = this.getAttribute('data-reservation-id');
+                    const hotel = this.getAttribute('data-hotel');
+                    const room = this.getAttribute('data-room');
+
+                    if (confirm(`¿Estás seguro de que deseas eliminar la reservación en ${hotel}, habitación #${room}?`)) {
+                        // Crear y enviar formulario
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '@Url.Action("Eliminar")';
+
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'id';
+                        input.value = reservationId;
+
+                        form.appendChild(input);
+                        document.body.appendChild(form);
+
+                        // Mostrar loading en botón
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Eliminando...';
+                        this.disabled = true;
+
+                        form.submit();
+                    }
+                });
+            });
+
+            // Efectos hover en filas
+            const rows = document.querySelectorAll('.reservation-row');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                });
+
+                row.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '';
+                });
+            });
+
+            // Auto-cerrar alertas después de 5 segundos
+            const alerts = document.querySelectorAll('.alert-danger');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+        });
+    </script>
+}

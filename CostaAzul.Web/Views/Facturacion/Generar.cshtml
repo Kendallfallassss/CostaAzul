@@ -1,0 +1,288 @@
+﻿@model CostaAzul.API.Models.Entities.Facturacion
+@{
+    ViewData["Title"] = "Pagar Factura";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">💳 Pagar Factura</h2>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-invoice me-2"></i>
+                        Detalles de la Factura
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="invoice-detail">
+                                <strong>Factura N°:</strong>
+                                <span class="text-primary">@Model.NumeroFactura</span>
+                            </p>
+                            <p class="invoice-detail">
+                                <strong>Estado:</strong>
+                                @if (Model.Estado == "Pagado")
+                                {
+                                    <span class="badge bg-success">Pagado</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                }
+                            </p>
+                            <p class="invoice-detail">
+                                <strong>Reservación:</strong>
+                                <span class="text-info">#@Model.ReservacionId</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="invoice-detail">
+                                <strong>Total a pagar:</strong>
+                                <span class="text-success fw-bold fs-4">₡@Model.MontoTotal.ToString("N0")</span>
+                            </p>
+                            <p class="invoice-detail">
+                                <strong>Fecha:</strong>
+                                <span>@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    @if (Model.Estado == "Pendiente")
+                    {
+                        <hr class="my-4">
+                        <form asp-action="ConfirmarPago" method="post" class="payment-form">
+                            <input type="hidden" name="facturaId" value="@Model.Id" />
+                            <input type="hidden" name="monto" value="@Model.MontoTotal" />
+                            <input type="hidden" name="reservacionId" value="@Model.ReservacionId" />
+
+                            <div class="mb-4">
+                                <label for="metodoPagoId" class="form-label fw-bold">
+                                    <i class="fas fa-credit-card me-2"></i>
+                                    Método de pago
+                                </label>
+                                <select class="form-select form-select-lg" id="metodoPagoId" name="metodoPagoId" required>
+                                    <option value="">-- Seleccione un método de pago --</option>
+                                    @foreach (var metodo in ViewBag.MetodosPago)
+                                    {
+                                        <option value="@metodo.Id">@metodo.Nombre</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="d-grid">
+                                <button class="btn btn-success btn-lg payment-button" type="submit">
+                                    <i class="fas fa-lock me-2"></i>
+                                    Confirmar Pago Seguro
+                                </button>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Transacción segura y protegida
+                                </small>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <hr class="my-4">
+                        <div class="alert alert-success text-center">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>¡Esta factura ya fue pagada exitosamente!</strong>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="mt-4 text-center">
+                <p class="text-muted">
+                    <i class="fas fa-question-circle me-2"></i>
+                    ¿Necesitas ayuda? <a href="#" class="text-decoration-none">Contactar soporte</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos simples y limpios */
+    .invoice-detail {
+        margin-bottom: 1rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+        .invoice-detail:last-child {
+            border-bottom: none;
+        }
+
+    .payment-form {
+        background: #f8f9fa;
+        padding: 2rem;
+        border-radius: 0.5rem;
+    }
+
+    .payment-button {
+        padding: 1rem 2rem;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+        .payment-button:hover {
+            background-color: #198754;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(25, 135, 84, 0.3);
+        }
+
+        .payment-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+    .form-select-lg {
+        padding: 0.75rem 1rem;
+        border: 2px solid #dee2e6;
+        transition: border-color 0.3s ease;
+    }
+
+        .form-select-lg:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+    .card {
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .payment-form
+
+    {
+        padding: 1.5rem;
+    }
+
+    .invoice-detail {
+        text-align: center;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Vista de pago inicializada");
+
+            // Manejar formulario de pago
+            const paymentForm = document.querySelector('.payment-form');
+            const paymentButton = document.querySelector('.payment-button');
+            const metodoPagoSelect = document.getElementById('metodoPagoId');
+
+            if (paymentForm) {
+                // Validar selección de método de pago
+                metodoPagoSelect.addEventListener('change', function() {
+                    if (this.value) {
+                        paymentButton.disabled = false;
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                    } else {
+                        paymentButton.disabled = true;
+                        this.classList.remove('is-valid');
+                    }
+                });
+
+                // Manejar envío del formulario
+                paymentForm.addEventListener('submit', function(e) {
+                    if (!metodoPagoSelect.value) {
+                        e.preventDefault();
+                        metodoPagoSelect.classList.add('is-invalid');
+                        metodoPagoSelect.focus();
+                        return false;
+                    }
+
+                    // Mostrar estado de carga
+                    paymentButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando pago...';
+                    paymentButton.disabled = true;
+
+                    // Agregar efecto visual
+                    paymentButton.style.background = '#6c757d';
+                });
+
+                // Inicializar estado del botón
+                paymentButton.disabled = !metodoPagoSelect.value;
+            }
+
+            // Agregar animación al monto total
+            const totalAmount = document.querySelector('.fs-4');
+            if (totalAmount) {
+                totalAmount.style.animation = 'pulse 2s infinite';
+            }
+
+            // Efecto hover en detalles de factura
+            const invoiceDetails = document.querySelectorAll('.invoice-detail');
+            invoiceDetails.forEach(detail => {
+                detail.addEventListener('mouseenter', function() {
+                    this.style.background = '#f8f9fa';
+                    this.style.transform = 'translateX(5px)';
+                });
+
+                detail.addEventListener('mouseleave', function() {
+                    this.style.background = '';
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+        });
+
+        // Función para mostrar confirmación antes del pago
+        function confirmPayment() {
+            const metodoPago = document.getElementById('metodoPagoId');
+            const selectedOption = metodoPago.options[metodoPago.selectedIndex].text;
+
+            return confirm(`¿Confirma que desea procesar el pago con ${selectedOption}?`);
+        }
+    </script>
+
+    <style>
+        /* Animaciones simples */
+        @@keyframes pulse {
+            0%
+
+        {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+
+        }
+
+        .invoice-detail {
+            transition: all 0.3s ease;
+        }
+
+        .form-select:invalid {
+            border-color: #dc3545;
+        }
+
+        .form-select:valid {
+            border-color: #198754;
+        }
+    </style>
+}

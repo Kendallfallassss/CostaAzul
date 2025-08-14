@@ -1,0 +1,717 @@
+﻿@model CostaAzul.API.Models.Entities.Facturacion
+@{
+    ViewData["Title"] = "Detalle de Factura";
+}
+
+<div class="container mt-4">
+    <!-- Header con título y número de factura -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="invoice-title mb-1">📄 Detalle de Factura</h2>
+                    <p class="text-muted mb-0">Factura N° <span class="fw-bold text-primary">@Model.NumeroFactura</span></p>
+                </div>
+                <div class="invoice-status">
+                    @if (Model.Estado == "Pagado")
+                    {
+                        <span class="badge bg-success fs-6 px-3 py-2">
+                            <i class="fas fa-check-circle me-2"></i>Pagado
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                            <i class="fas fa-clock me-2"></i>Pendiente
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerta de confirmación de pago -->
+    @if (TempData["PagoConfirmado"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong>¡Excelente!</strong> El pago fue confirmado correctamente.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Información principal de la factura -->
+        <div class="col-lg-8">
+            <div class="card invoice-card shadow-sm border-0 mb-4">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>
+                        Información de la Factura
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">Número de Factura:</label>
+                                <span class="info-value">@Model.NumeroFactura</span>
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label">Estado:</label>
+                                <span class="info-value">
+                                    @if (Model.Estado == "Pagado")
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Pagado
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-clock me-1"></i>Pendiente
+                                        </span>
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">Monto Total:</label>
+                                <span class="info-value total-amount">₡@Model.MontoTotal.ToString("N0")</span>
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label">Fecha de Emisión:</label>
+                                <span class="info-value">@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-item mt-3">
+                        <label class="info-label">ID de Reservación:</label>
+                        <span class="info-value">
+                            <span class="badge bg-info text-white">#@Model.ReservacionId</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos de la reservación -->
+            <div class="card reservation-card shadow-sm border-0 mb-4">
+                <div class="card-header bg-gradient-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bed me-2"></i>
+                        Datos de la Reservación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-borderless reservation-table">
+                            <tbody>
+                                <tr>
+                                    <th class="reservation-label">
+                                        <i class="fas fa-hotel me-2 text-primary"></i>Hotel:
+                                    </th>
+                                    <td class="reservation-value">@Model.Reservacion?.Habitacion?.Hotel?.Nombre</td>
+                                </tr>
+                                <tr>
+                                    <th class="reservation-label">
+                                        <i class="fas fa-door-open me-2 text-success"></i>Habitación:
+                                    </th>
+                                    <td class="reservation-value">#@Model.Reservacion?.Habitacion?.Numero</td>
+                                </tr>
+                                <tr>
+                                    <th class="reservation-label">
+                                        <i class="fas fa-calendar-alt me-2 text-warning"></i>Fechas:
+                                    </th>
+                                    <td class="reservation-value">
+                                        <span class="date-range">
+                                            @Model.Reservacion?.FechaInicio.ToString("dd/MM/yyyy")
+                                            <i class="fas fa-arrow-right mx-2"></i>
+                                            @Model.Reservacion?.FechaFin.ToString("dd/MM/yyyy")
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="reservation-label">
+                                        <i class="fas fa-users me-2 text-info"></i>Huéspedes:
+                                    </th>
+                                    <td class="reservation-value">@Model.Reservacion?.CantidadPersonas personas</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel lateral con resumen -->
+        <div class="col-lg-4">
+            <div class="card summary-card shadow-sm border-0 sticky-top">
+                <div class="card-header bg-gradient-secondary text-white text-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calculator me-2"></i>
+                        Resumen de Pago
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="total-display">
+                        <p class="mb-1 text-muted">Total a Pagar</p>
+                        <h3 class="total-amount-large text-primary mb-3">₡@Model.MontoTotal.ToString("N0")</h3>
+                    </div>
+
+                    @if (Model.Estado == "Pendiente")
+                    {
+                        <a asp-controller="Pagos" asp-action="Pagar" asp-route-id="@Model.Id"
+                           class="btn btn-success btn-lg w-100 pay-button">
+                            <i class="fas fa-credit-card me-2"></i>
+                            Proceder al Pago
+                        </a>
+                        <small class="text-muted d-block mt-2">Pago seguro y protegido</small>
+                    }
+                    else
+                    {
+                        <div class="paid-status">
+                            <i class="fas fa-check-circle text-success display-4 mb-2"></i>
+                            <p class="text-success fw-bold mb-0">¡Factura Pagada!</p>
+                            <small class="text-muted">Gracias por preferirnos</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalles de la factura -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card details-card shadow-sm border-0">
+                <div class="card-header bg-gradient-dark text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list-ul me-2"></i>
+                        Detalles de la Factura
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.DetalleFacturas != null && Model.DetalleFacturas.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover details-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="fas fa-tag me-2"></i>Descripción</th>
+                                        <th class="text-end"><i class="fas fa-dollar-sign me-2"></i>Monto</th>
+                                        <th class="text-center"><i class="fas fa-info-circle me-2"></i>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var d in Model.DetalleFacturas)
+                                    {
+                                        <tr class="detail-row">
+                                            <td class="description-cell">@d.Descripcion</td>
+                                            <td class="amount-cell text-end fw-bold">₡@d.Monto.ToString("N0")</td>
+                                            <td class="status-cell text-center">
+                                                @if (d.EstadoPago == "Cancelado")
+                                                {
+                                                    <span class="badge bg-success status-badge">
+                                                        <i class="fas fa-check me-1"></i>@d.EstadoPago
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger status-badge">
+                                                        <i class="fas fa-times me-1"></i>@d.EstadoPago
+                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-details text-center py-4">
+                            <i class="fas fa-inbox text-muted display-4 mb-3"></i>
+                            <p class="text-muted mb-0">No hay líneas de detalle asociadas a esta factura.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Variables CSS para consistencia */
+    :root {
+        --invoice-primary: #0066cc;
+        --invoice-success: #28a745;
+        --invoice-warning: #ffc107;
+        --invoice-info: #17a2b8;
+        --invoice-secondary: #6c757d;
+        --invoice-dark: #343a40;
+        --shadow-light: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-medium: 0 4px 12px rgba(0,0,0,0.12);
+        --border-radius: 0.75rem;
+        --transition: all 0.3s ease;
+    }
+
+    /* Título principal */
+    .invoice-title {
+        color: var(--invoice-primary);
+        font-weight: 700;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Cards principales */
+    .invoice-card, .reservation-card, .summary-card, .details-card {
+        border-radius: var(--border-radius);
+        transition: var(--transition);
+        overflow: hidden;
+    }
+
+        .invoice-card:hover, .reservation-card:hover, .details-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+    /* Gradientes para headers */
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, var(--invoice-primary), #004499) !important;
+    }
+
+    .bg-gradient-info {
+        background: linear-gradient(135deg, var(--invoice-info), #117a8b) !important;
+    }
+
+    .bg-gradient-secondary {
+        background: linear-gradient(135deg, var(--invoice-secondary), #545b62) !important;
+    }
+
+    .bg-gradient-dark {
+        background: linear-gradient(135deg, var(--invoice-dark), #23272b) !important;
+    }
+
+    /* Información estructurada */
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        margin: 0;
+    }
+
+    .info-value {
+        font-weight: 500;
+        color: #212529;
+    }
+
+    .total-amount {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--invoice-success) !important;
+    }
+
+    /* Tabla de reservación */
+    .reservation-table th {
+        border: none;
+        padding: 1rem;
+        width: 30%;
+    }
+
+    .reservation-table td {
+        border: none;
+        padding: 1rem;
+        font-weight: 500;
+    }
+
+    .reservation-label {
+        color: #495057;
+        font-weight: 600;
+    }
+
+    .reservation-value {
+        color: #212529;
+    }
+
+    .date-range {
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        display: inline-block;
+        color: #1976d2;
+        font-weight: 600;
+    }
+
+    /* Panel de resumen */
+    .summary-card {
+        top: 2rem;
+    }
+
+    .total-display {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .total-amount-large {
+        font-size: 2rem;
+        font-weight: 800;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .pay-button {
+        background: linear-gradient(135deg, var(--invoice-success), #1e7e34);
+        border: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: var(--transition);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    }
+
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+        }
+
+    .paid-status {
+        padding: 2rem 1rem;
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        border-radius: 0.5rem;
+    }
+
+    /* Tabla de detalles */
+    .details-table {
+        margin: 0;
+    }
+
+        .details-table thead th {
+            background: #f8f9fa;
+            border: none;
+            font-weight: 600;
+            color: #495057;
+            padding: 1rem;
+        }
+
+    .detail-row {
+        transition: var(--transition);
+    }
+
+        .detail-row:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+        }
+
+    .description-cell {
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .amount-cell {
+        color: var(--invoice-primary);
+        font-size: 1.1rem;
+    }
+
+    .status-badge {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .no-details {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        margin: 1rem;
+    }
+
+    /* Status badges mejorados */
+    .invoice-status .badge {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        box-shadow: var(--shadow-light);
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .invoice-title
+
+    {
+        font-size: 1.5rem;
+    }
+
+    .total-amount-large {
+        font-size: 1.5rem;
+    }
+
+    .summary-card {
+        position: static !important;
+        margin-top: 2rem;
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .date-range {
+        font-size: 0.875rem;
+    }
+
+    }
+
+    /* Animaciones */
+    @@keyframes slideInUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .card {
+        animation: slideInUp 0.6s ease forwards;
+    }
+
+        .card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .card:nth-child(4) {
+            animation-delay: 0.6s;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Vista de detalle de factura inicializada");
+
+            // Inicializar efectos y animaciones
+            initializeInvoiceEffects();
+
+            // Manejar botón de pago
+            setupPaymentButton();
+
+            // Agregar tooltips informativos
+            addInformativeTooltips();
+
+            // Animar números grandes
+            animateNumbers();
+        });
+
+        function initializeInvoiceEffects() {
+            // Efecto de highlight en filas de detalles al hover
+            const detailRows = document.querySelectorAll('.detail-row');
+            detailRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.background = 'linear-gradient(135deg, #f8f9fa, #e9ecef)';
+                });
+
+                row.addEventListener('mouseleave', function() {
+                    this.style.background = '';
+                });
+            });
+
+            // Efecto de pulso en badges de estado
+            const statusBadges = document.querySelectorAll('.status-badge');
+            statusBadges.forEach(badge => {
+                if (badge.classList.contains('bg-success')) {
+                    badge.style.animation = 'pulse 2s infinite';
+                }
+            });
+        }
+
+        function setupPaymentButton() {
+            const payButton = document.querySelector('.pay-button');
+
+            if (payButton) {
+                payButton.addEventListener('click', function(e) {
+                    // Mostrar loading state
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+                    this.disabled = true;
+
+                    // Simular delay para mejor UX
+                    setTimeout(() => {
+                        // El enlace se ejecutará normalmente
+                        window.location.href = this.href;
+                    }, 1000);
+
+                    e.preventDefault();
+                });
+
+                // Agregar efecto de ondas al hacer click
+                payButton.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple-effect');
+
+                    this.appendChild(ripple);
+
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            }
+        }
+
+        function addInformativeTooltips() {
+            // Agregar tooltips a elementos importantes
+            const tooltipElements = [
+                { selector: '.total-amount-large', title: 'Monto total de la factura incluyendo todos los conceptos' },
+                { selector: '.reservation-value', title: 'Información detallada de tu reservación' },
+                { selector: '.status-badge', title: 'Estado actual del pago de este concepto' }
+            ];
+
+            tooltipElements.forEach(({ selector, title }) => {
+                document.querySelectorAll(selector).forEach(el => {
+                    el.setAttribute('title', title);
+                    el.style.cursor = 'help';
+                });
+            });
+        }
+
+        function animateNumbers() {
+            // Animar el número del total
+            const totalAmountElement = document.querySelector('.total-amount-large');
+            if (totalAmountElement) {
+                const finalAmount = totalAmountElement.textContent;
+                const numericValue = parseFloat(finalAmount.replace(/[₡,]/g, ''));
+
+                let currentValue = 0;
+                const increment = numericValue / 50;
+
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= numericValue) {
+                        currentValue = numericValue;
+                        clearInterval(timer);
+                    }
+
+                    totalAmountElement.textContent = '₡' + Math.floor(currentValue).toLocaleString();
+                }, 50);
+            }
+        }
+
+        // Función para copiar número de factura al clipboard
+        function copyInvoiceNumber() {
+            const invoiceNumber = document.querySelector('.info-value').textContent;
+            navigator.clipboard.writeText(invoiceNumber).then(() => {
+                // Mostrar feedback visual
+                const toast = document.createElement('div');
+                toast.className = 'toast-notification';
+                toast.textContent = '¡Número de factura copiado!';
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            });
+        }
+
+        // Agregar evento para copiar número de factura
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.info-value') && e.target.closest('.info-item:first-child')) {
+                copyInvoiceNumber();
+            }
+        });
+    </script>
+
+    <style>
+        /* Estilos adicionales para efectos */
+        @@keyframes pulse {
+            0%
+
+        {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+
+        }
+
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @@keyframes ripple {
+            to
+
+        {
+            transform: scale(2);
+            opacity: 0;
+        }
+
+        }
+
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1050;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @@keyframes slideInRight {
+            from
+
+        {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        }
+    </style>
+}

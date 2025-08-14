@@ -1,0 +1,366 @@
+﻿@model CostaAzul.API.Models.Entities.Usuario
+
+@{
+    ViewData["Title"] = "Login / Registro";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CostaAzul - Acceso</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Toast de logout exitoso -->
+    @if (TempData["LogoutSuccess"] != null)
+    {
+        <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
+            <div class="toast show auth-toast" role="alert">
+                <div class="toast-header bg-success text-white">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong class="me-auto">¡Hasta pronto!</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    @TempData["LogoutSuccess"]
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Contenedor principal -->
+    <div class="auth-container">
+        <div class="auth-background"></div>
+
+        <div class="container-fluid h-100 d-flex align-items-center justify-content-center">
+            <div class="row w-100 justify-content-center">
+                <div class="col-lg-10 col-xl-8">
+                    <div class="auth-card card shadow-lg border-0" id="authCard">
+
+                        <!-- Panel de Login -->
+                        <div class="auth-panel login-panel active" id="loginPanel">
+                            <div class="card-body p-5">
+                                <div class="text-center mb-4">
+                                    <h2 class="auth-title">
+                                        <i class="fas fa-sign-in-alt me-2"></i>
+                                        Iniciar Sesión
+                                    </h2>
+                                    <p class="text-muted">Accede a tu cuenta de CostaAzul</p>
+                                </div>
+
+                                @if (!ViewData.ModelState.IsValid)
+                                {
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Error:</strong> @ViewData.ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                }
+
+                                <form asp-action="Login" asp-controller="Usuarios" method="post" class="auth-form">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            <i class="fas fa-envelope me-2"></i>
+                                            Correo electrónico
+                                        </label>
+                                        <input type="email" name="correo" class="form-control form-control-lg"
+                                               placeholder="tu@email.com" required />
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">
+                                            <i class="fas fa-lock me-2"></i>
+                                            Contraseña
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="password" name="password" class="form-control form-control-lg"
+                                                   placeholder="Tu contraseña" required id="loginPassword" />
+                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('loginPassword')">
+                                                <i class="fas fa-eye" id="loginPasswordIcon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid mb-3">
+                                        <button type="submit" class="btn btn-primary btn-lg auth-btn">
+                                            <i class="fas fa-sign-in-alt me-2"></i>
+                                            Iniciar Sesión
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="text-center">
+                                    <p class="mb-0">
+                                        ¿No tienes cuenta?
+                                        <a href="#" class="auth-switch" onclick="switchToRegister()">Regístrate aquí</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel de Registro -->
+                        <div class="auth-panel register-panel" id="registerPanel">
+                            <div class="card-body p-5">
+                                <div class="text-center mb-4">
+                                    <h2 class="auth-title">
+                                        <i class="fas fa-user-plus me-2"></i>
+                                        Crear Cuenta
+                                    </h2>
+                                    <p class="text-muted">Únete a Hotelify y disfruta nuestros servicios</p>
+                                </div>
+
+                                <form asp-action="Registro" asp-controller="Usuarios" method="post" class="auth-form">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-user me-2"></i>
+                                                Nombre completo
+                                            </label>
+                                            <input name="NombreUsuario" class="form-control form-control-lg"
+                                                   placeholder="Tu nombre completo" required />
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-user-tag me-2"></i>
+                                                Tipo de cuenta
+                                            </label>
+                                            <select name="RolId" class="form-select form-select-lg" required>
+                                                <option value="">Selecciona tu rol</option>
+                                                @foreach (var rol in ViewBag.Roles as SelectList)
+                                                {
+                                                    <option value="@rol.Value">@rol.Text</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            <i class="fas fa-envelope me-2"></i>
+                                            Correo electrónico
+                                        </label>
+                                        <input type="email" name="Correo" class="form-control form-control-lg"
+                                               placeholder="tu@email.com" required />
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">
+                                            <i class="fas fa-lock me-2"></i>
+                                            Contraseña
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="password" name="PasswordHash" class="form-control form-control-lg"
+                                                   placeholder="Crea una contraseña segura" required id="registerPassword" />
+                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('registerPassword')">
+                                                <i class="fas fa-eye" id="registerPasswordIcon"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Mínimo 6 caracteres
+                                        </small>
+                                    </div>
+
+                                    <div class="d-grid mb-3">
+                                        <button type="submit" class="btn btn-success btn-lg auth-btn">
+                                            <i class="fas fa-user-plus me-2"></i>
+                                            Crear Cuenta
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="text-center">
+                                    <p class="mb-0">
+                                        ¿Ya tienes cuenta?
+                                        <a href="#" class="auth-switch" onclick="switchToLogin()">Inicia sesión aquí</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Variables y reseteo */
+        :root {
+            --primary-color: #0d6efd;
+            --success-color: #198754;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Fondo con imagen */
+        .auth-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient( 135deg, rgba(13, 110, 253, 0.8), rgba(25, 135, 84, 0.8) ), url('https://images.unsplash.com/photo-1566073771259-6a8506099945') center/cover;
+            z-index: -1;
+        }
+
+        /* Contenedor principal */
+        .auth-container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        /* Card principal */
+        .auth-card {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            min-height: 600px;
+        }
+
+        /* Paneles de auth */
+        .auth-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+            .auth-panel.active {
+                opacity: 1;
+                pointer-events: all;
+            }
+
+        /* Títulos */
+        .auth-title {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Formularios */
+        .auth-form {
+            /* Sin animación */
+        }
+
+        .form-control-lg, .form-select-lg {
+            border: 2px solid var(--border-color);
+            padding: 0.75rem 1rem;
+        }
+
+            .form-control-lg:focus, .form-select-lg:focus {
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            }
+
+        /* Botones */
+        .auth-btn {
+            font-weight: 600;
+            padding: 1rem 2rem;
+        }
+
+        /* Enlaces de cambio */
+        .auth-switch {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+            .auth-switch:hover {
+                color: var(--success-color);
+                text-decoration: underline;
+            }
+
+        /* Toast */
+        .auth-toast {
+            border: none;
+            box-shadow: var(--shadow);
+        }
+
+        /* Input groups */
+        .input-group .btn {
+            border: 2px solid var(--border-color);
+            border-left: none;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .auth-container
+
+        {
+            padding: 1rem;
+        }
+
+        .auth-card {
+            min-height: auto;
+        }
+
+        .card-body {
+            padding: 2rem !important;
+        }
+
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Cambiar entre paneles
+        function switchToRegister() {
+            document.getElementById('loginPanel').classList.remove('active');
+            document.getElementById('registerPanel').classList.add('active');
+        }
+
+        function switchToLogin() {
+            document.getElementById('registerPanel').classList.remove('active');
+            document.getElementById('loginPanel').classList.add('active');
+        }
+
+        // Toggle contraseña
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(inputId + 'Icon');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // Auto cerrar toast
+        document.addEventListener('DOMContentLoaded', function() {
+            const toast = document.querySelector('.auth-toast');
+            if (toast) {
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>

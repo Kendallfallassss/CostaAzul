@@ -1,0 +1,342 @@
+﻿@model CostaAzul.API.Models.Entities.Habitacion
+@{
+    ViewData["Title"] = "Editar habitación";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-warning">
+                    <i class="fas fa-edit me-2"></i>
+                    Editar Habitación #@Model.Numero
+                </h2>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Volver
+                </a>
+            </div>
+
+            <!-- Card del formulario -->
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        Modificar Información
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post" class="edit-room-form">
+                        <input type="hidden" asp-for="Id" />
+
+                        <!-- Hotel Selection -->
+                        <div class="mb-4">
+                            <label asp-for="HotelId" class="form-label fw-bold">
+                                <i class="fas fa-hotel me-2"></i>
+                                Hotel
+                            </label>
+                            <select asp-for="HotelId" class="form-select form-select-lg" asp-items="ViewBag.Hoteles" required>
+                                <option value="">-- Selecciona un hotel --</option>
+                            </select>
+                            <span asp-validation-for="HotelId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Información básica en dos columnas -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Numero" class="form-label fw-bold">
+                                    <i class="fas fa-door-open me-2"></i>
+                                    Número de Habitación
+                                </label>
+                                <input asp-for="Numero" class="form-control form-control-lg"
+                                       placeholder="Ej: 101, 205, etc." required />
+                                <span asp-validation-for="Numero" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Tipo" class="form-label fw-bold">
+                                    <i class="fas fa-tag me-2"></i>
+                                    Tipo de Habitación
+                                </label>
+                                <input asp-for="Tipo" class="form-control form-control-lg"
+                                       placeholder="Ej: Suite, Estándar, Deluxe" required />
+                                <span asp-validation-for="Tipo" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Pricing y capacidad -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PrecioPorPersona" class="form-label fw-bold">
+                                    <i class="fas fa-dollar-sign me-2"></i>
+                                    Precio por Persona (₡)
+                                </label>
+                                <input asp-for="PrecioPorPersona" class="form-control form-control-lg"
+                                       type="number" step="100" min="0" placeholder="0" required />
+                                <small class="text-muted">Precio en colones costarricenses</small>
+                                <span asp-validation-for="PrecioPorPersona" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Capacidad" class="form-label fw-bold">
+                                    <i class="fas fa-users me-2"></i>
+                                    Capacidad Máxima
+                                </label>
+                                <input asp-for="Capacidad" class="form-control form-control-lg"
+                                       type="number" min="1" max="10" placeholder="1" required />
+                                <small class="text-muted">Número máximo de huéspedes</small>
+                                <span asp-validation-for="Capacidad" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-4">
+                            <label asp-for="Descripcion" class="form-label fw-bold">
+                                <i class="fas fa-file-text me-2"></i>
+                                Descripción de la Habitación
+                            </label>
+                            <textarea asp-for="Descripcion" class="form-control form-control-lg"
+                                      rows="4" placeholder="Describe las características y amenidades de la habitación..."></textarea>
+                            <small class="text-muted">Opcional: Información adicional sobre la habitación</small>
+                            <span asp-validation-for="Descripcion" class="text-danger"></span>
+                        </div>
+
+                        <!-- Disponibilidad -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input asp-for="Disponibilidad" class="form-check-input" role="switch" />
+                                <label asp-for="Disponibilidad" class="form-check-label fw-bold">
+                                    <i class="fas fa-toggle-on me-2"></i>
+                                    Habitación disponible para reservas
+                                </label>
+                            </div>
+                            <small class="text-muted">Desactivar si la habitación está en mantenimiento o fuera de servicio</small>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning btn-lg text-dark fw-bold save-btn">
+                                <i class="fas fa-save me-2"></i>
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información de edición -->
+            <div class="mt-4">
+                <div class="alert alert-warning border-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atención:</strong> Los cambios afectarán las futuras reservaciones. Las reservas existentes mantendrán la información original.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos específicos para edición */
+    .edit-room-form {
+        /* Sin efectos complejos */
+    }
+
+    .form-control-lg, .form-select-lg {
+        border: 2px solid #dee2e6;
+        transition: border-color 0.3s ease;
+    }
+
+        .form-control-lg:focus, .form-select-lg:focus {
+            border-color: #ffc107;
+            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+        }
+
+        .form-control-lg:valid {
+            border-color: #198754;
+        }
+
+        .form-control-lg:invalid {
+            border-color: #dc3545;
+        }
+
+    .form-check-input {
+        width: 3rem;
+        height: 1.5rem;
+    }
+
+    .save-btn {
+        min-width: 200px;
+        border-color: #ffc107;
+        background-color: #ffc107;
+    }
+
+        .save-btn:hover {
+            background-color: #ffca2c;
+            border-color: #ffc720;
+            color: #000 !important;
+        }
+
+    .card {
+        transition: box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+        }
+
+    /* Labels con iconos */
+    .form-label {
+        color: #495057;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Textarea específico */
+    .form-control[rows] {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    /* Alert personalizado */
+    .alert-warning {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+        border-left: 4px solid #ffc107;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .d-flex.justify-content-between
+
+    {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .save-btn, .btn-outline-secondary {
+        width: 100%;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Formulario de edición de habitación inicializado');
+
+            // Referencias a elementos
+            const form = document.querySelector('.edit-room-form');
+            const saveBtn = document.querySelector('.save-btn');
+            const numeroInput = document.getElementById('Numero');
+            const precioInput = document.getElementById('PrecioPorPersona');
+
+            // Validación al enviar
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const requiredFields = form.querySelectorAll('[required]');
+                    let isValid = true;
+
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            field.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            field.classList.remove('is-invalid');
+                        }
+                    });
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        alert('Por favor completa todos los campos requeridos.');
+                        return false;
+                    }
+
+                    // Confirmación antes de guardar
+                    if (!confirm('¿Estás seguro de que deseas guardar los cambios?')) {
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    // Estado de carga
+                    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+                    saveBtn.disabled = true;
+                });
+            }
+
+            // Validación en tiempo real
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.hasAttribute('required') && !this.value.trim()) {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('is-invalid') && this.value.trim()) {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            });
+
+            // Formatear número de habitación
+            if (numeroInput) {
+                numeroInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
+                });
+            }
+
+            // Preview del precio
+            if (precioInput) {
+                function updatePrecioPreview() {
+                    const valor = parseInt(precioInput.value) || 0;
+                    let preview = document.getElementById('precioPreview');
+
+                    if (!preview) {
+                        preview = document.createElement('small');
+                        preview.id = 'precioPreview';
+                        preview.className = 'text-success fw-bold d-block mt-1';
+                        precioInput.parentNode.appendChild(preview);
+                    }
+
+                    preview.textContent = valor > 0 ? `₡${valor.toLocaleString()} por persona` : '';
+                }
+
+                // Ejecutar al cargar y en cada cambio
+                updatePrecioPreview();
+                precioInput.addEventListener('input', updatePrecioPreview);
+            }
+
+            // Resaltar cambios
+            const originalValues = {};
+            inputs.forEach(input => {
+                originalValues[input.name] = input.value;
+
+                input.addEventListener('input', function() {
+                    if (this.value !== originalValues[this.name]) {
+                        this.style.borderLeftWidth = '4px';
+                        this.style.borderLeftColor = '#ffc107';
+                    } else {
+                        this.style.borderLeftWidth = '';
+                        this.style.borderLeftColor = '';
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,281 @@
+﻿@{
+    ViewData["Title"] = "Panel Usuario";
+    Layout = "_Layout";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-5 fw-bold text-center text-primary">🌟 Panel de Usuario</h2>
+    <div class="row justify-content-center g-5">
+        <!-- Hoteles Card -->
+        <div class="col-md-6">
+            <div class="card shadow-sm rounded-3 border-0 h-100 user-card">
+                <img src="https://itexa.es/blog/wp-content/uploads/2021/12/requisitos-para-abrir-un-hotel-en-espana.jpg" 
+                     class="card-img-top rounded-top-3" 
+                     alt="Explorar Hoteles" 
+                     style="height: 220px; object-fit: cover;">
+                <div class="card-body bg-gradient-primary text-white rounded-bottom-3 d-flex flex-column">
+                    <h5 class="card-title fw-bold mb-3">🏨 Explorar Hoteles</h5>
+                    <p class="card-text flex-grow-1">Descubre una amplia selección de hoteles disponibles para tu próxima estadía.</p>
+                    <a class="btn btn-outline-light btn-lg mt-auto fw-semibold shadow-sm" 
+                       asp-controller="Hoteles" 
+                       asp-action="Index">
+                        <i class="fas fa-search me-2"></i>Explorar Hoteles
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reservas Card -->
+        <div class="col-md-6">
+            <div class="card shadow-sm rounded-3 border-0 h-100 user-card">
+                <img src="https://assets.simpleviewinc.com/simpleview/image/upload/c_limit,w_1000/crm/miamifl/Colony-GMCBV_283DBD1C-497F-40E1-BFC4019833A6DF29_5335ec78-cde2-49ce-bf026a6a541e9137.jpg" 
+                     class="card-img-top rounded-top-3" 
+                     alt="Mis Reservaciones" 
+                     style="height: 220px; object-fit: cover;">
+                <div class="card-body bg-gradient-warning text-white rounded-bottom-3 d-flex flex-column">
+                    <h5 class="card-title fw-bold mb-3">📅 Mis Reservaciones</h5>
+                    <p class="card-text flex-grow-1">Administra y revisa todas tus reservaciones actuales y historial de estadías.</p>
+                    <a class="btn btn-outline-light btn-lg mt-auto fw-semibold shadow-sm" 
+                       asp-controller="Reservaciones" 
+                       asp-action="MisReservas">
+                        <i class="fas fa-calendar-check me-2"></i>Ver Mis Reservas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección adicional de información rápida -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="alert alert-info rounded-3 border-0 shadow-sm" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-info-circle me-3 fs-4"></i>
+                    <div>
+                        <h6 class="alert-heading mb-1">¡Bienvenido a tu panel personal!</h6>
+                        <small class="mb-0">Desde aquí puedes gestionar todas tus actividades hoteleras de manera fácil y rápida.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Gradientes personalizados para el panel de usuario */
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+    }
+    
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #fd7e14 0%, #e55d00 100%) !important;
+    }
+    
+    /* Estilos específicos para las cards de usuario */
+    .user-card {
+        transition: all 0.4s ease;
+        border: 2px solid transparent;
+    }
+    
+    .user-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+        border-color: rgba(0,123,255,0.3);
+    }
+    
+    .user-card .card-img-top {
+        transition: all 0.4s ease;
+        filter: brightness(0.9);
+    }
+    
+    .user-card:hover .card-img-top {
+        transform: scale(1.1);
+        filter: brightness(1.1);
+    }
+    
+    /* Efectos en botones */
+    .user-card .btn-outline-light {
+        border: 2px solid rgba(255,255,255,0.8);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .user-card .btn-outline-light:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: white;
+        transform: translateY(-2px);
+    }
+    
+    /* Título principal con efecto */
+    h2.text-primary {
+        text-shadow: 2px 2px 4px rgba(0,123,255,0.3);
+        letter-spacing: 1px;
+    }
+    
+    /* Animación de pulso para iconos */
+    .fas {
+        animation: pulse 2s infinite;
+    }
+    
+    @@keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .user-card:hover {
+            transform: translateY(-5px) scale(1.01);
+        }
+        
+        h2.text-primary {
+            font-size: 1.5rem;
+        }
+    }
+    
+    /* Efecto de ondas en el fondo */
+    .container {
+        position: relative;
+        overflow-x: hidden;
+    }
+    
+    .container::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(0,123,255,0.05) 0%, transparent 70%);
+        animation: wave 15s ease-in-out infinite;
+        z-index: -1;
+    }
+    
+    @@keyframes wave {
+        0%, 100% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(1.1); }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Panel de usuario inicializado correctamente");
+            
+            // Inicializar efectos de las cards
+            initializeUserCardEffects();
+            
+            // Agregar animación de entrada secuencial
+            animateCardsSequentially();
+            
+            // Mostrar mensaje de bienvenida personalizado
+            showWelcomeMessage();
+        });
+        
+        function initializeUserCardEffects() {
+            const userCards = document.querySelectorAll('.user-card');
+            
+            userCards.forEach((card, index) => {
+                // Efecto de click suave
+                card.addEventListener('click', function(e) {
+                    if (!e.target.closest('a')) {
+                        const link = this.querySelector('a');
+                        if (link) {
+                            // Agregar efecto de carga
+                            this.style.opacity = '0.7';
+                            setTimeout(() => {
+                                link.click();
+                            }, 200);
+                        }
+                    }
+                });
+
+               // Efecto de parallax suave en las imágenes
+                card.addEventListener('mousemove', function(e) {
+                    const rect = this.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = (centerX - x) / 20;
+
+                    const img = this.querySelector('.card-img-top');
+                    img.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.1)`;
+                });
+
+                // Resetear efecto al salir
+                card.addEventListener('mouseleave', function() {
+                    const img = this.querySelector('.card-img-top');
+                    img.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+                });
+            });
+        }
+
+        function animateCardsSequentially() {
+            const cards = document.querySelectorAll('.user-card');
+            const alert = document.querySelector('.alert');
+
+            // Animar cards con delay
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px)';
+
+                setTimeout(() => {
+                    card.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 300 + 200);
+            });
+
+            // Animar alerta después de las cards
+            if (alert) {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(30px)';
+
+                setTimeout(() => {
+                    alert.style.transition = 'all 0.6s ease';
+                    alert.style.opacity = '1';
+                    alert.style.transform = 'translateY(0)';
+                }, cards.length * 300 + 500);
+            }
+        }
+
+        function showWelcomeMessage() {
+            // Mostrar mensaje de bienvenida después de las animaciones
+            setTimeout(() => {
+                const welcomeToast = document.createElement('div');
+                welcomeToast.className = 'toast-container position-fixed top-0 end-0 p-3';
+                welcomeToast.innerHTML = `
+                    <div class="toast show" role="alert">
+                        <div class="toast-header bg-primary text-white">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <strong class="me-auto">Panel de Usuario</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">
+                            ¡Bienvenido! Tu panel está listo para usar.
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(welcomeToast);
+
+                // Auto-cerrar el toast después de 4 segundos
+                setTimeout(() => {
+                    welcomeToast.remove();
+                }, 4000);
+
+            }, 1500);
+        }
+
+        // Agregar efecto de carga a los enlaces
+        document.querySelectorAll('a[asp-controller]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Cargando...';
+            });
+        });
+    </script>
+}

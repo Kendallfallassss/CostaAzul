@@ -1,0 +1,377 @@
+﻿@model IEnumerable<CostaAzul.API.Models.Entities.Habitacion>
+
+<div class="container-fluid mt-4">
+    <!-- Header con título y botón crear -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary mb-0">
+            <i class="fas fa-bed me-2"></i>
+            Administración de Habitaciones
+        </h2>
+        <a class="btn btn-success btn-lg" asp-action="Create">
+            <i class="fas fa-plus me-2"></i>
+            Nueva Habitación
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body">
+            <form method="get" class="row align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-filter me-2"></i>
+                        Filtrar por Hotel
+                    </label>
+                    <select class="form-select" name="hotelId" onchange="this.form.submit()">
+                        <option value="">-- Todos los hoteles --</option>
+                        @foreach (var hotel in (SelectList)ViewBag.Hoteles)
+                        {
+                            var selected = hotel.Value.ToString() == ViewBag.HotelSeleccionado?.ToString()
+                            ? "selected" : "";
+                            var html = $"<option value='{hotel.Value}' {selected}>{hotel.Text}</option>";
+                            @Html.Raw(html)
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <a href="@Url.Action("Index", "Habitaciones")" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-refresh me-2"></i>
+                        Limpiar
+                    </a>
+                </div>
+                <div class="col-md-6 text-end">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Total: @Model.Count() habitaciones
+                    </small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de habitaciones -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 rooms-table">
+                        <thead class="table-primary">
+                            <tr>
+                                <th><i class="fas fa-hotel me-2"></i>Hotel</th>
+                                <th><i class="fas fa-door-open me-2"></i>Número</th>
+                                <th><i class="fas fa-tag me-2"></i>Tipo</th>
+                                <th><i class="fas fa-dollar-sign me-2"></i>Precio</th>
+                                <th><i class="fas fa-users me-2"></i>Capacidad</th>
+                                <th><i class="fas fa-toggle-on me-2"></i>Estado</th>
+                                <th class="text-center"><i class="fas fa-cog me-2"></i>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var h in Model)
+                            {
+                                <tr class="room-row" id="room-row-@h.Id">
+                                    <td>
+                                        <span class="fw-semibold">@h.Hotel?.Nombre</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-dark fs-6">#@h.Numero</span>
+                                    </td>
+                                    <td>@h.Tipo</td>
+                                    <td>
+                                        <span class="text-success fw-bold">₡@h.PrecioPorPersona.ToString("N0")</span>
+                                        <small class="text-muted d-block">por persona</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">@h.Capacidad personas</span>
+                                    </td>
+                                    <td>
+                                        @if (h.Disponibilidad)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>Disponible
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times me-1"></i>No Disponible
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Edit" asp-route-id="@h.Id"
+                                               class="btn btn-warning btn-sm"
+                                               title="Editar habitación">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button"
+                                                    class="btn btn-danger btn-sm"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteModal-@h.Id"
+                                                    title="Eliminar habitación">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-bed text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted mt-3">No hay habitaciones registradas</h4>
+                    <p class="text-muted">Comienza creando tu primera habitación</p>
+                    <a class="btn btn-success btn-lg" asp-action="Create">
+                        <i class="fas fa-plus me-2"></i>
+                        Crear Primera Habitación
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modales de confirmación de eliminación -->
+@foreach (var h in Model)
+{
+    <div class="modal fade" id="deleteModal-@h.Id" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Confirmar Eliminación
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-trash text-danger mb-3" style="font-size: 3rem;"></i>
+                    <h6>¿Estás seguro de eliminar la habitación?</h6>
+                    <p class="mb-0">
+                        <strong>Hotel:</strong> @h.Hotel?.Nombre<br>
+                        <strong>Habitación:</strong> #@h.Numero (@h.Tipo)
+                    </p>
+                    <small class="text-muted d-block mt-2">Esta acción no se puede deshacer</small>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button"
+                            class="btn btn-danger delete-confirm-btn"
+                            data-room-id="@h.Id"
+                            data-room-number="@h.Numero">
+                        <i class="fas fa-trash me-2"></i>Sí, Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    /* Estilos para la tabla de habitaciones */
+    .rooms-table {
+        font-size: 0.95rem;
+    }
+
+    .room-row {
+        transition: background-color 0.3s ease;
+    }
+
+        .room-row:hover {
+            background-color: #f8f9fa;
+        }
+
+    .btn-group .btn {
+        margin: 0 2px;
+    }
+
+    .table th {
+        border-bottom: 2px solid #dee2e6;
+        vertical-align: middle;
+        font-weight: 600;
+    }
+
+    .table td {
+        vertical-align: middle;
+        padding: 1rem 0.75rem;
+    }
+
+    /* Badge styles */
+    .badge {
+        font-size: 0.8rem;
+    }
+
+    /* Modal styles */
+    .modal-content {
+        border-radius: 0.75rem;
+    }
+
+    .modal-header {
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
+
+    /* Loading state */
+    .loading-row {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    /* Empty state */
+    .text-center.py-5 {
+        padding: 4rem 2rem !important;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .btn-group
+
+    {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-group .btn {
+        margin: 2px 0;
+        width: 100%;
+    }
+
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Administración de habitaciones inicializada');
+
+            // Manejar eliminación de habitaciones
+            const deleteButtons = document.querySelectorAll('.delete-confirm-btn');
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const roomId = this.getAttribute('data-room-id');
+                    const roomNumber = this.getAttribute('data-room-number');
+                    const modal = this.closest('.modal');
+                    const row = document.getElementById(`room-row-${roomId}`);
+
+                    // Cambiar botón a loading
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Eliminando...';
+                    this.disabled = true;
+
+                    // Marcar fila como loading
+                    row.classList.add('loading-row');
+
+                    // Realizar petición AJAX
+                    fetch(`/Habitaciones/EliminarAjax/${roomId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Éxito: cerrar modal y eliminar fila
+                            const bsModal = bootstrap.Modal.getInstance(modal);
+                            bsModal.hide();
+
+                            // Animación de salida
+                            row.style.transition = 'all 0.5s ease';
+                            row.style.backgroundColor = '#f8d7da';
+
+                            setTimeout(() => {
+                                row.style.transform = 'translateX(-100%)';
+                                row.style.opacity = '0';
+
+                                setTimeout(() => {
+                                    row.remove();
+
+                                    // Verificar si quedaron filas
+                                    const remainingRows = document.querySelectorAll('.room-row').length;
+                                    if (remainingRows === 0) {
+                                        location.reload(); // Recargar para mostrar estado vacío
+                                    }
+                                }, 500);
+                            }, 300);
+
+                            showNotification(`Habitación #${roomNumber} eliminada exitosamente`, 'success');
+
+                        } else {
+                            throw new Error('Error al eliminar');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+
+                        // Restaurar estado
+                        row.classList.remove('loading-row');
+                        this.innerHTML = '<i class="fas fa-trash me-2"></i>Sí, Eliminar';
+                        this.disabled = false;
+
+                        // Cerrar modal
+                        const bsModal = bootstrap.Modal.getInstance(modal);
+                        bsModal.hide();
+
+                        showNotification('Error al eliminar la habitación. Inténtalo de nuevo.', 'error');
+                    });
+                });
+            });
+
+            // Efectos hover en filas
+            const rows = document.querySelectorAll('.room-row');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#e3f2fd';
+                });
+
+                row.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('loading-row')) {
+                        this.style.backgroundColor = '';
+                    }
+                });
+            });
+        });
+
+        // Función para mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            const alertClass = type === 'error' ? 'alert-danger' :
+                              type === 'success' ? 'alert-success' : 'alert-info';
+
+            const notification = document.createElement('div');
+            notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = `
+                top: 20px;
+                right: 20px;
+                z-index: 1060;
+                min-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            `;
+
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'error' ? 'exclamation-triangle' :
+                                   type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+    </script>
+}

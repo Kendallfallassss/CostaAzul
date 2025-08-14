@@ -1,0 +1,445 @@
+﻿@model CostaAzul.API.Models.Entities.Facturacion
+@{
+    ViewData["Title"] = "Pagar Factura";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">💳 @ViewData["Title"]</h2>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3 payment-card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>
+                        Información de Factura
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Información básica -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <strong>Factura N°:</strong>
+                                <span class="text-primary fw-bold">@Model.NumeroFactura</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Estado actual:</strong>
+                                @if (Model.Estado == "Pagado")
+                                {
+                                    <span class="badge bg-success fs-6">
+                                        <i class="fas fa-check me-1"></i>Pagado
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark fs-6">
+                                        <i class="fas fa-clock me-1"></i>Pendiente
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="total-display">
+                                <p class="mb-1 text-muted">Total a Pagar</p>
+                                <h3 class="text-success fw-bold">₡@Model.MontoTotal.ToString("N0")</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detalle de items -->
+                    <h5 class="mb-3">
+                        <i class="fas fa-list me-2"></i>
+                        Detalle de Conceptos
+                    </h5>
+
+                    <div class="detail-list">
+                        @foreach (var item in Model.DetalleFacturas)
+                        {
+                            <div class="detail-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="detail-description">
+                                        <span class="fw-semibold">@item.Descripcion</span>
+                                    </div>
+                                    <div class="detail-info">
+                                        <span class="amount text-primary fw-bold me-3">₡@item.Monto.ToString("N0")</span>
+                                        @if (item.EstadoPago == "Cancelado")
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>@item.EstadoPago
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times me-1"></i>@item.EstadoPago
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Formulario de pago o mensaje de pagado -->
+                    @if (Model.Estado != "Pagado")
+                    {
+                        <hr class="my-4">
+                        <div class="payment-section">
+                            <h5 class="mb-3">
+                                <i class="fas fa-credit-card me-2"></i>
+                                Procesar Pago
+                            </h5>
+
+                            <form asp-action="ConfirmarPago" method="post" class="payment-form">
+                                <input type="hidden" name="facturaId" value="@Model.Id" />
+
+                                <div class="mb-4">
+                                    <label for="metodoPagoId" class="form-label fw-bold">
+                                        Método de pago:
+                                    </label>
+                                    <select class="form-select form-select-lg" name="metodoPagoId" id="metodoPagoId" required asp-items="ViewBag.MetodosPago">
+                                        <option value="">-- Seleccione un método de pago --</option>
+                                    </select>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button class="btn btn-success btn-lg payment-btn" type="submit" disabled>
+                                        <i class="fas fa-lock me-2"></i>
+                                        Confirmar Pago Seguro
+                                    </button>
+                                </div>
+
+                                <div class="text-center mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-shield-alt me-1"></i>
+                                        Pago seguro y encriptado
+                                    </small>
+                                </div>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <hr class="my-4">
+                        <div class="alert alert-success text-center paid-alert">
+                            <i class="fas fa-check-circle me-2 fs-4"></i>
+                            <strong>¡Esta factura ya está pagada!</strong>
+                            <br>
+                            <small>Gracias por confiar en nosotros</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para la card de pago */
+    .payment-card {
+        transition: all 0.3s ease;
+    }
+
+        .payment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12) !important;
+        }
+
+    /* Información básica */
+    .info-item {
+        margin-bottom: 1rem;
+        padding: 0.5rem 0;
+    }
+
+    .total-display {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 2px solid #28a745;
+    }
+
+    /* Lista de detalles */
+    .detail-list {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .detail-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: white;
+        border-radius: 0.375rem;
+        border-left: 4px solid #0d6efd;
+        transition: all 0.3s ease;
+    }
+
+        .detail-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .detail-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .amount {
+        font-size: 1.1rem;
+    }
+
+    /* Sección de pago */
+    .payment-section {
+        background: #f8f9fa;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        border: 2px dashed #dee2e6;
+    }
+
+    .payment-btn {
+        padding: 1rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .payment-btn:not(:disabled):hover {
+            background-color: #198754;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+        }
+
+        .payment-btn:disabled {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+    .form-select-lg {
+        border: 2px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+        .form-select-lg:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .form-select-lg.is-valid {
+            border-color: #198754;
+        }
+
+        .form-select-lg.is-invalid {
+            border-color: #dc3545;
+        }
+
+    /* Alerta de pagado */
+    .paid-alert {
+        border: 2px solid #28a745;
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .total-display
+
+    {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .detail-info {
+        flex-direction: column;
+        align-items: flex-end !important;
+        gap: 0.5rem;
+    }
+
+    .payment-section {
+        padding: 1.5rem;
+    }
+
+    }
+
+    /* Scrollbar personalizada para la lista de detalles */
+    .detail-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .detail-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .detail-list::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+
+        .detail-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Vista de pago con detalles inicializada");
+
+            // Elementos del formulario
+            const metodoPagoSelect = document.getElementById('metodoPagoId');
+            const paymentBtn = document.querySelector('.payment-btn');
+            const paymentForm = document.querySelector('.payment-form');
+
+            if (metodoPagoSelect && paymentBtn) {
+                // Habilitar/deshabilitar botón según selección
+                metodoPagoSelect.addEventListener('change', function() {
+                    if (this.value) {
+                        paymentBtn.disabled = false;
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+
+                        // Actualizar texto del botón
+                        const selectedText = this.options[this.selectedIndex].text;
+                        paymentBtn.innerHTML = `<i class="fas fa-lock me-2"></i>Pagar con ${selectedText}`;
+                    } else {
+                        paymentBtn.disabled = true;
+                        this.classList.remove('is-valid');
+                        paymentBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Confirmar Pago Seguro';
+                    }
+                });
+
+                // Manejar envío del formulario
+                if (paymentForm) {
+                    paymentForm.addEventListener('submit', function(e) {
+                        if (!metodoPagoSelect.value) {
+                            e.preventDefault();
+                            metodoPagoSelect.classList.add('is-invalid');
+                            metodoPagoSelect.focus();
+
+                            // Mostrar mensaje de error
+                            showNotification('Por favor seleccione un método de pago', 'error');
+                            return false;
+                        }
+
+                        // Confirmar pago
+                        const selectedMethod = metodoPagoSelect.options[metodoPagoSelect.selectedIndex].text;
+                        if (!confirm(`¿Confirma que desea procesar el pago con ${selectedMethod}?`)) {
+                            e.preventDefault();
+                            return false;
+                        }
+
+                        // Mostrar estado de carga
+                        paymentBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando pago...';
+                        paymentBtn.disabled = true;
+                        metodoPagoSelect.disabled = true;
+
+                        // Cambiar estilo del botón
+                        paymentBtn.classList.remove('btn-success');
+                        paymentBtn.classList.add('btn-secondary');
+                    });
+                }
+            }
+
+            // Efecto hover en items de detalle
+            const detailItems = document.querySelectorAll('.detail-item');
+            detailItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.borderLeftColor = '#28a745';
+                });
+
+                item.addEventListener('mouseleave', function() {
+                    this.style.borderLeftColor = '#0d6efd';
+                });
+            });
+
+            // Animación del monto total
+            const totalAmount = document.querySelector('.total-display h3');
+            if (totalAmount) {
+                totalAmount.style.animation = 'pulse 2s infinite';
+            }
+        });
+
+        // Función para mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} notification-toast`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                ${message}
+            `;
+
+            // Estilos para la notificación
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1050;
+                min-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                animation: slideInRight 0.3s ease;
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto-remover después de 4 segundos
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 4000);
+        }
+    </script>
+
+    <style>
+        /* Animaciones */
+        q@keyframes pulse {
+            0%
+
+        {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.03);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+
+        }
+
+        @@keyframes slideInRight {
+            from
+
+        {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        }
+
+        @@keyframes slideOutRight {
+            from
+
+        {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        }
+    </style>
+}
