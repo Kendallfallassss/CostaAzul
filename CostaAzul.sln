@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36327.8 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CostaAzul", "CostaAzul\CostaAzul.csproj", "{F4F41E15-105A-4022-AE85-493817372077}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CostaAzul.API", "CostaAzul\CostaAzul.API.csproj", "{F4F41E15-105A-4022-AE85-493817372077}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CostaAzul.Web", "CostaAzul.Web\CostaAzul.Web.csproj", "{834F8347-7357-4C16-BFB6-769B11E67FCA}"
 EndProject

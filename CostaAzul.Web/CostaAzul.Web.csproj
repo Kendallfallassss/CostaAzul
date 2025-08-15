@@ -10,4 +10,13 @@
     <Folder Include="Views\Admin\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CostaAzulShare\CostaAzulShare.csproj" />
+    <ProjectReference Include="..\CostaAzul\CostaAzul.API.csproj" />
+  </ItemGroup>
+
 </Project>
